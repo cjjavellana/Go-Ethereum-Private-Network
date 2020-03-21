@@ -1,0 +1,52 @@
+---
+- hosts: all
+  vars:
+    go_runtime_path_var: /workspace/go1.14.1
+    go_runtime_bin_var: go1.14.1.linux-amd64.tar.gz
+    custom_path_var: |
+       export PATH=$PATH:{{ go_runtime_path_var }}/go/bin
+       export GO_PATH={{ go_runtime_path_var }}/go
+  tasks:
+    - name: Create workspace directory
+      file:
+        path: /workspace
+        state: directory
+      become: yes
+
+    - name: Change /workspace directory ownership to vagrant
+      file:
+        path: /workspace
+        owner: vagrant
+        group: vagrant
+        mode: '0755'
+      become: yes
+
+    - command: which go
+      register: which_go
+      ignore_errors: True
+
+    - name: Download GO Runtime
+      get_url:
+        url: 'https://dl.google.com/go/{{ go_runtime_bin_var }}'
+        dest: '/tmp/{{ go_runtime_bin_var }}'
+        mode: '0660'
+      when: which_go is failed
+
+    - name: Ensure GO Runtime Directory Exists
+      file:
+        path: '{{ go_runtime_path_var }}'
+        state: directory
+      when: which_go is failed
+
+    - name: Extract GO Runtime to /workspace
+      unarchive:
+        src: '/tmp/{{ go_runtime_bin_var }}'
+        dest: '{{ go_runtime_path_var }}'
+      when: which_go is failed
+
+    - name: Add GO Runtime to System Path
+      copy:
+        dest: /etc/profile.d/custom-path.sh
+        content: "{{ custom_path_var }}"
+      become: yes
+      when: which_go is failed
