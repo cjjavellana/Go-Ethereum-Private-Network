@@ -1,0 +1,64 @@
+---
+- hosts: all
+  vars:
+    go_ethereum_bin_var: geth-linux-amd64-1.9.12-b6f1c8dc
+
+  tasks:
+
+    - command: stat /workspace/eth-testnet
+      register: testnet_exists
+      ignore_errors: True
+
+    - name: Download Go Ethereum Linux Binary
+      get_url:
+        url: 'https://gethstore.blob.core.windows.net/builds/{{ go_ethereum_bin_var }}.tar.gz'
+        dest: '/tmp/{{ go_ethereum_bin_var }}.tar.gz'
+        mode: '0660'
+      when: testnet_exists is failed
+
+    - name: Create ETH TestNet Directory
+      file:
+        path: /workspace/eth-testnet
+        state: directory
+      when: testnet_exists is failed
+
+    - name: Extract Go Ethereum Binary
+      unarchive:
+        src: '/tmp/{{ go_ethereum_bin_var }}.tar.gz'
+        dest: '/workspace/eth-testnet'
+      when: testnet_exists is failed
+      
+    - name: Add geth to the PATH variable
+      blockinfile:
+        path: /etc/profile.d/custom-path.sh
+        block: |
+          export PATH=$PATH:/workspace/eth-testnet/{{ go_ethereum_bin_var }}
+      become: yes
+      when: testnet_exists is failed
+
+    - name: Create Signer Account
+      copy:
+        src: /vagrant/signerpwd.txt
+        dest: /workspace/eth-testnet/signerpwd.txt 
+
+    - name: Create Signer Account
+      command: geth account new --datadir data1 --password signerpwd.txt
+      register: create_signer_acct_output
+      args:
+        chdir: /workspace/eth-testnet
+      when: testnet_exists is failed
+
+    - debug:
+        msg: Create signer account output is {{ create_signer_acct_output }}
+      when: testnet_exists is failed
+
+    - name: Get Signer Address
+      set_fact:
+        re: 'Public address of the key:\s+(?P<public_key>[a-zA-Z0-9]+)'
+    - set_fact:
+        public_key: "{{ create_signer_acct_output.stdout | regex_search(re, '\\g<public_key>') }}"
+    - set_fact:
+        public_key: '{{ public_key[0] }}'
+      
+    - debug:
+        var: public_key
