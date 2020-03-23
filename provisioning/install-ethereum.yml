@@ -54,11 +54,40 @@
 
     - name: Get Signer Address
       set_fact:
-        re: 'Public address of the key:\s+(?P<public_key>[a-zA-Z0-9]+)'
+        re: 'Public address of the key:\s+0x(?P<public_key>[a-zA-Z0-9]+)'
+      when: testnet_exists is failed
+
     - set_fact:
-        public_key: "{{ create_signer_acct_output.stdout | regex_search(re, '\\g<public_key>') }}"
+        signer_public_key: "{{ create_signer_acct_output.stdout | regex_search(re, '\\g<public_key>') }}"
+      when: testnet_exists is failed
+
     - set_fact:
-        public_key: '{{ public_key[0] }}'
+        signer_public_key: '{{ signer_public_key[0] }}'
+      when: testnet_exists is failed
       
     - debug:
-        var: public_key
+        var: signer_public_key
+
+    - name: Prepare Genesis JSON File
+      template:
+        src: /vagrant/genesis.json
+        dest: /workspace/eth-testnet/genesis.json
+      when: testnet_exists is failed
+
+    - name: Initialize the GETH database
+      command: geth init --datadir data1 genesis.json
+      args:
+        chdir: /workspace/eth-testnet
+      when: testnet_exists is failed
+
+    - name: Permanently Disable SELinux
+      replace:
+        path: /etc/sysconfig/selinux
+        regexp: '^SELINUX=enforcing$'
+        replace: 'SELINUX=disabled'
+      become: yes
+
+    - name: Disable SELinux - Only for this session
+      command: setenforce 0
+      become: yes
+
