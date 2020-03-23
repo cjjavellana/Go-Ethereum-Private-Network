@@ -65,14 +65,20 @@
     - set_fact:
         signer_public_key: '{{ signer_public_key[0] }}'
       when: testnet_exists is failed
-      
+    
+    - name: Write Signer Key to file
+      copy:
+        dest: /workspace/eth-testnet/eth.env
+        content: 'SIGNER_KEY=0x{{ signer_public_key }}'
+      when: testnet_exists is failed
+
     - debug:
         var: signer_public_key
 
     - name: Prepare Genesis JSON File
       template:
         src: /vagrant/genesis.json
-        dest: /workspace/eth-testnet/genesis.json
+        dest: '{{ eth_testnet_dir_var }}/genesis.json'
       when: testnet_exists is failed
 
     - name: Initialize the GETH database
@@ -123,13 +129,15 @@
         var: bootstrap_enr
 
     - name: Write bootstrap enr record to file
-      copy:
-        dest: /workspace/eth-testnet/bootstrap.enr
-        content: '{{ bootstrap_enr.stdout }}'
+      blockinfile:
+        path: /workspace/eth-testnet/eth.env
+        block: |
+          {{ bootstrap_enr.stdout }}
+      when: testnet_exists is failed
 
     - name: Strip Quotes in bootstrap.enr
       replace:
-        path: /workspace/eth-testnet/bootstrap.enr
+        path: /workspace/eth-testnet/eth.env
         regexp: '"(.*)"'
         replace: 'BOOTSTRAP_ENR=\1'
       when: testnet_exists is failed
@@ -150,3 +158,4 @@
       command: systemctl start geth-member
       become: yes
       when: testnet_exists is failed
+

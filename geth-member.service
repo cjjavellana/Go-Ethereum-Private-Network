@@ -2,7 +2,7 @@
 Description=GETH Member Node Startup Script
 
 [Service]
-EnvironmentFile=/workspace/eth-testnet/bootstrap.enr
+EnvironmentFile=/workspace/eth-testnet/eth.env
 WorkingDirectory=/workspace/eth-testnet
 Environment=HOME=/home/vagrant
 ExecStart=/workspace/eth-testnet/geth-linux-amd64-1.9.12-b6f1c8dc/geth --datadir data2 --networkid 15 --port 30305 --bootnodes "${BOOTSTRAP_ENR}"
