@@ -23,8 +23,6 @@ Please refer [here](https://geth.ethereum.org/docs/interface/private-network) fo
   $ git clone https://github.com/cjjavellana/Go-Ethereum-Private-Network.git
   ```
 
-  Note: You may need to comment out the `config.ssh.private_key_path = "/home/christian/VirtualBox VMs/go-ethereum/private_key"` in the Vagrantfile.
-
 2. Initialize Virtual Environment & Setup GETH Private Network
 
   ```bash
