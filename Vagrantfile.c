@@ -46,6 +46,8 @@ Vagrant.configure("2") do |config|
   # argument is a set of non-required options.
   config.vm.synced_folder ".", "/vagrant"
 
+  config.ssh.private_key_path = "/home/christian/VirtualBox VMs/go-ethereum/private_key"
+
   config.vm.provider "virtualbox" do |vb|
     # Display the VirtualBox GUI when booting the machine
     vb.gui = true

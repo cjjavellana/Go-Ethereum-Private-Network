@@ -86,8 +86,37 @@
         regexp: '^SELINUX=enforcing$'
         replace: 'SELINUX=disabled'
       become: yes
+      when: testnet_exists is failed
 
     - name: Disable SELinux - Only for this session
       command: setenforce 0
       become: yes
+      ignore_errors: True
+      when: testnet_exists is failed
 
+    - name: Copy geth-bootstrap service to /usr/lib/systemd/system
+      copy:
+       src: /vagrant/geth-bootstrap.service
+       dest: /usr/lib/systemd/system/geth-bootstrap.service
+      become: yes
+      when: testnet_exists is failed
+
+    - name: Enable geth-bootrap on startup
+      command: systemctl enable geth-bootstrap
+      become: yes
+      when: testnet_exists is failed
+
+    - name: Start Bootstrap Node
+      command: systemctl start geth-bootstrap
+      become: yes
+      when: testnet_exists is failed
+
+    - name: Get Bootstrap Node Record
+      command: geth attach data1/geth.ipc --exec admin.nodeInfo.enr
+      register: bootstrap_enr
+      args:
+        chdir: /workspace/eth-testnet
+      when: testnet_exists is failed
+
+    - debug:
+        var: bootstrap_enr
