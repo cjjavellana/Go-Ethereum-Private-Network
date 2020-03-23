@@ -42,3 +42,11 @@ Please refer [here](https://geth.ethereum.org/docs/interface/private-network) fo
   ```
   [vagrant@localhost ~]$ ps -ef | grep geth
   ```
+
+## TODOs
+
+1. Install npm & truffle for deploying smart contracts
+
+2. Install MariaDB / Mysql
+
+
