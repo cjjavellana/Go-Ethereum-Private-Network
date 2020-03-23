@@ -1,0 +1,16 @@
+---
+- hosts: all
+
+  tasks:
+
+   - name: Install Mysql
+     command: yum install -y '@mysql'
+     become: yes
+
+   - name: Enable Mysql service
+     command: systemctl enable --now mysqld
+     become: yes
+
+   - name: Start Mysql Service
+     command: systemctl start mysqld
+     become: yes
