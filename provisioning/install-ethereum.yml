@@ -2,6 +2,7 @@
 - hosts: all
   vars:
     go_ethereum_bin_var: geth-linux-amd64-1.9.12-b6f1c8dc
+    eth_testnet_dir_var: /workspace/eth-testnet
 
   tasks:
 
@@ -18,14 +19,14 @@
 
     - name: Create ETH TestNet Directory
       file:
-        path: /workspace/eth-testnet
+        path: '{{ eth_testnet_dir_var }}'
         state: directory
       when: testnet_exists is failed
 
     - name: Extract Go Ethereum Binary
       unarchive:
         src: '/tmp/{{ go_ethereum_bin_var }}.tar.gz'
-        dest: '/workspace/eth-testnet'
+        dest: '{{ eth_testnet_dir_var }}'
       when: testnet_exists is failed
       
     - name: Add geth to the PATH variable
@@ -39,13 +40,13 @@
     - name: Create Signer Account
       copy:
         src: /vagrant/signerpwd.txt
-        dest: /workspace/eth-testnet/signerpwd.txt 
+        dest: '{{ eth_testnet_dir_var }}/signerpwd.txt'
 
     - name: Create Signer Account
       command: geth account new --datadir data1 --password signerpwd.txt
       register: create_signer_acct_output
       args:
-        chdir: /workspace/eth-testnet
+        chdir: '{{ eth_testnet_dir_var }}'
       when: testnet_exists is failed
 
     - debug:
@@ -120,3 +121,32 @@
 
     - debug:
         var: bootstrap_enr
+
+    - name: Write bootstrap enr record to file
+      copy:
+        dest: /workspace/eth-testnet/bootstrap.enr
+        content: '{{ bootstrap_enr.stdout }}'
+
+    - name: Strip Quotes in bootstrap.enr
+      replace:
+        path: /workspace/eth-testnet/bootstrap.enr
+        regexp: '"(.*)"'
+        replace: 'BOOTSTRAP_ENR=\1'
+      when: testnet_exists is failed
+
+    - name: Copy geth-member service to /usr/lib/systemd/system
+      copy:
+        src: /vagrant/geth-member.service
+        dest: /usr/lib/systemd/system/geth-member.service
+      become: yes
+      when: testnet_exists is failed
+
+    - name: Enable geth-member on startup
+      command: systemctl enable geth-member
+      become: yes
+      when: testnet_exists is failed
+
+    - name: Start Member Node
+      command: systemctl start geth-member
+      become: yes
+      when: testnet_exists is failed
