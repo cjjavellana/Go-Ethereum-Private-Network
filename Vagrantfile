@@ -1,5 +1,6 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
+require 'socket'
 
 # All Vagrant configuration is done below. The "2" in Vagrant.configure
 # configures the configuration version (we support older styles for
@@ -19,17 +20,14 @@ Vagrant.configure("2") do |config|
   # boxes will only be checked for updates when the user runs
   # `vagrant box outdated`. This is not recommended.
   # config.vm.box_check_update = false
-
-  # Create a forwarded port mapping which allows access to a specific port
-  # within the machine from a port on the host machine. In the example below,
-  # accessing "localhost:8080" will access port 80 on the guest machine.
-  # NOTE: This will enable public access to the opened port
-  # config.vm.network "forwarded_port", guest: 80, host: 8080
-
-  # Create a forwarded port mapping which allows access to a specific port
-  # within the machine from a port on the host machine and only allow access
-  # via 127.0.0.1 to disable public access
-  # config.vm.network "forwarded_port", guest: 80, host: 8080, host_ip: "127.0.0.1"
+ 
+  # Create a forwarded port that is accessible only to the host machine
+  # 8545 -> GETH RPC Port
+  # 8546 -> GETH WS Port
+  # 3306 -> Mysql Port 
+  config.vm.network "forwarded_port", guest: 8546, host: 8546, host_ip: "127.0.0.1"
+  config.vm.network "forwarded_port", guest: 8545, host: 8545, host_ip: "127.0.0.1"
+  config.vm.network "forwarded_port", guest: 3306, host: 3306, host_ip: "127.0.0.1"
 
   # Create a private network, which allows host-only access to the machine
   # using a specific IP.
@@ -46,6 +44,8 @@ Vagrant.configure("2") do |config|
   # argument is a set of non-required options.
   config.vm.synced_folder ".", "/vagrant"
 
+  config.ssh.private_key_path = "/home/christian/VirtualBox VMs/go-ethereum/private_key" if "#{`hostname`[0..-2]}".eql?("christian-P65xHP")  
+
   config.vm.provider "virtualbox" do |vb|
     # Display the VirtualBox GUI when booting the machine
     vb.gui = true
@@ -53,7 +53,7 @@ Vagrant.configure("2") do |config|
     # Customize the amount of memory on the VM:
     vb.memory = "4096"
   end
-  
+ 
   # See https://github.com/hashicorp/vagrant/issues/11299 
   config.vm.provision "shell", inline: "dnf install -y python3-pip && pip3 install --upgrade ansible==2.7.13"
 
