@@ -14,3 +14,24 @@
    - name: Start Mysql Service
      command: systemctl start mysqld
      become: yes
+
+   - name: Make sure pymysql is present
+     become: yes
+     pip:
+       name: pymysql
+       state: present
+
+   - name: Create database user for the blockchain
+     mysql_user:
+       login_user: root
+       name: blockchain
+       password: blockchain
+       priv: '*.*:ALL'
+       host: '%'
+       state: present
+
+   - name: Create a new database with name 'blockchain'
+     mysql_db:
+       login_user: root
+       name: blockchain
+       state: present
