@@ -81,7 +81,7 @@
         dest: '{{ eth_testnet_dir_var }}/genesis.json'
       when: testnet_exists is failed
 
-    - name: Initialize the GETH database
+    - name: Initialize Node1 GETH database
       command: geth init --datadir data1 genesis.json
       args:
         chdir: /workspace/eth-testnet
@@ -140,6 +140,12 @@
         path: /workspace/eth-testnet/eth.env
         regexp: '"(.*)"'
         replace: 'BOOTSTRAP_ENR=\1'
+      when: testnet_exists is failed
+
+    - name: Initialize Node2 GETH database
+      command: geth init --datadir data2 genesis.json
+      args:
+        chdir: /workspace/eth-testnet
       when: testnet_exists is failed
 
     - name: Copy geth-member service to /usr/lib/systemd/system
