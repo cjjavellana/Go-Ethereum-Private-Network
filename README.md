@@ -57,10 +57,10 @@ Before provisioning this Virtual Box, ensure that the following ports (in your h
 
 A MySQL database server is also provisioned in this box. Details are as follows:
 
-Host: localhost (port forwarded)
-Port: 3306
-Username: blockchain
-Password: blockchain
+Host: localhost (port forwarded) \
+Port: 3306 \
+Username: blockchain \
+Password: blockchain \
 
 ## Deploying Smart Contracts
 TODO
