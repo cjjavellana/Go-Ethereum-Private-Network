@@ -5,7 +5,7 @@ Description=GETH Bootstrap Node Startup Script
 EnvironmentFile=/workspace/eth-testnet/eth.env
 WorkingDirectory=/workspace/eth-testnet
 Environment=HOME=/home/vagrant
-ExecStart=/workspace/eth-testnet/geth-linux-amd64-1.9.12-b6f1c8dc/geth --datadir data1 --networkid 15 --nat extip:192.168.33.10 --rpc --rpcaddr "0.0.0.0" --rpcport 8545 --ws --wsaddr "0.0.0.0" --wsport 8546 --unlock "${SIGNER_KEY}" --password signerpwd.txt --mine --allow-insecure-unlock
+ExecStart=/workspace/eth-testnet/geth-linux-amd64-1.9.12-b6f1c8dc/geth --rpcapi "db,eth,web3,personal" --datadir data1 --networkid 15 --nat extip:192.168.33.10 --rpc --rpcaddr "0.0.0.0" --rpcport 8545 --ws --wsaddr "0.0.0.0" --wsport 8546 --unlock "${SIGNER_KEY}" --password signerpwd.txt --mine --allow-insecure-unlock
 Restart=always
 PrivateTmp=true
 User=vagrant
